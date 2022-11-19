@@ -75,12 +75,12 @@
 
 
 \begin{frame}
-  \begin{definition}[monoid]
+  \begin{definition}[monoid, set-theoretical]
 
     A ``monoid'' is a tuple $(A, \varphi, e)$ where
     \begin{itemize}
       \item A is a set\footnote{For all practical purposes, it's convenient to restrict the definition to non-empty sets.}
-      \item $\varphi : A \times A \rightarrow A$ is an \emph{associative} binary operation on A
+      \item $\varphi : A \times A \rightarrow A$ is a binary \emph{associative} operation on A
       \item $e \in A$ is a ``neutral'' element, ie, for every $a \in A $, $\varphi(a, e) = \varphi(e,a) = a$
     \end{itemize}
 
@@ -108,7 +108,9 @@
 \end{frame}
 
 \begin{frame}
-  Monoids are everywhere:
+  Monoids are everywhere.
+
+  Classic examples:
   \begin{itemize}
     \item $(\N, +, 0)$ is a (commutative) monoid
     \item $(\N, \times , 1)$ is a (commutative) monoid
@@ -117,6 +119,7 @@
     \item etc
   \end{itemize}
 \end{frame}
+
 
 \begin{frame}[fragile]
   \begin{lstlisting}[language=haskell]
@@ -147,13 +150,13 @@
 
 \begin{frame}[fragile]
   \begin{lstlisting}[language=haskell]
-  {-# LANGUAGE FlexibleInstances #-} 
-  -- https://github.com/ghc-proposals/ghc-proposals/pull/279
+  {-# LANGUAGE FlexibleInstances #-}
 
   instance Monoid String where
      (<>) = (++)
      mempty = ""
   \end{lstlisting}
+  \footnotetext{https://github.com/ghc-proposals/ghc-proposals/pull/279}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -163,9 +166,29 @@
      mempty = []
   \end{lstlisting}
 \end{frame}
+\begin{frame}[fragile]
+  ``Homeworks'':
+  \begin{itemize}
+    \item prove whether (\verb|Double| , $+$, $0$) is a Monoid in Scala or not
+    \item prove whether (\verb|BigDecimal| , $+$, $0$) is a Monoid in Scala or not
+    \item prove whether sorters on a list of sortable elements can be equipped with a Monoid instance or not. 
+    \item what about filter predicates?
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+  Monoidal parsing
+
+
+
+
+\end{frame}  
 
 \begin{frame}
   Monoids, categorically
+
+
 
 
 \end{frame}
