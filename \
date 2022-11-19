@@ -105,7 +105,7 @@
   \begin{lstlisting}[language=haskell]
   class Monoid a where
      (<>) :: a -> a -> a -- binary operation
-     mempty :: a  -- neutral element
+     zero :: a  -- neutral element
   \end{lstlisting}
 \end{frame}
 
@@ -113,65 +113,17 @@
 \begin{frame}[fragile]
 \begin{lstlisting}[language=haskell]
   class Semigroup a where
-    (<>) :: a -> a -> a -- binary operation
+    (<>) :: a -> a -> a -- binary operation 
 
   class Semigroup a => Monoid a where
-    mempty :: a -- neutral element
+    zero :: a -- neutral element
 \end{lstlisting}
 \end{frame}
 
 \begin{frame}
-  Monoids are everywhere:
   \begin{itemize}
-    \item $(\N, +, 0)$ is a (commutative) monoid
-    \item $(\N, \times , 1)$ is a (commutative) monoid
-    \item String concatenation is a (non-commutative) monoid, with empty string as neutral element
-    \item etc
-  \end{itemize}
+  $(\N, +, 0)$ is a monoid 
 \end{frame}
-
-\begin{frame}[fragile]
-  \begin{lstlisting}[language=haskell]
-  {-# LANGUAGE DerivingVia #-}
-
-  newtype AdditiveInteger = AdditiveInteger Integer
-    deriving (Eq,Show)
-    deriving Num via Integer
-
-  instance Monoid AdditiveInteger where
-     (<>) = (+)
-     mempty = 0
-  \end{lstlisting}
-\end{frame}
-\begin{frame}[fragile]
-  \begin{lstlisting}[language=haskell]
-  {-# LANGUAGE DerivingVia #-}
-
-  newtype MultiplicativeInteger = MultiplicativeInteger Integer
-    deriving (Eq,Show)
-    deriving Num via Integer
-
-  instance Monoid MultiplicativeInteger where
-     (<>) = (*)
-     mempty = 1
-  \end{lstlisting}
-\end{frame}
-
-\begin{frame}[fragile]
-  \begin{lstlisting}[language=haskell]
-  {-# LANGUAGE FlexibleInstances #-}
-
-  instance Monoid String where
-     (<>) = (++)
-     mempty = ""
-  \end{lstlisting}
-\end{frame}
-
-\begin{frame}
-  Monoids, categorically
-
-\end{frame}
-
 
 
 \section{Optparse}
