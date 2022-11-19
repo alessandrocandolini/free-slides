@@ -113,6 +113,7 @@
     \item $(\N, +, 0)$ is a (commutative) monoid
     \item $(\N, \times , 1)$ is a (commutative) monoid
     \item String concatenation is a (non-commutative) monoid, with empty string as neutral element
+    \item Singly-linked list concatenation is a (non-commutative) monoid, with empty list as neutral element
     \item etc
   \end{itemize}
 \end{frame}
@@ -146,7 +147,8 @@
 
 \begin{frame}[fragile]
   \begin{lstlisting}[language=haskell]
-  {-# LANGUAGE FlexibleInstances #-}
+  {-# LANGUAGE FlexibleInstances #-} 
+  -- https://github.com/ghc-proposals/ghc-proposals/pull/279
 
   instance Monoid String where
      (<>) = (++)
@@ -154,8 +156,17 @@
   \end{lstlisting}
 \end{frame}
 
+\begin{frame}[fragile]
+  \begin{lstlisting}[language=haskell]
+  instance Monoid [a] where
+     (<>) = (++)
+     mempty = []
+  \end{lstlisting}
+\end{frame}
+
 \begin{frame}
   Monoids, categorically
+
 
 \end{frame}
 
