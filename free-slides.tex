@@ -8,6 +8,8 @@
 \usepackage{smartdiagram}
 \usepackage{lstautogobble}
 \usepackage{listings}
+\usepackage{breqn}
+\usepackage{amsmath}
 \usepackage{booktabs}
 \usepackage[scale=2]{ccicons}%creative commons
 \setbeamercovered{transparent}%invisible by default
@@ -48,7 +50,7 @@
 \metroset{titleformat frame=smallcaps}
 
 \title{Rockin' in a \emph{free} world}
-%\subtitle{}
+%\subtitle{A tour of free structures}
 
 \date{\today}
 \author[Alessandro Candolini]{Alessandro Candolini}
@@ -160,55 +162,247 @@
 \end{frame}
 
 \begin{frame}[fragile]
+  ``Homeworks'':
+  \begin{itemize}
+    \item prove whether (\verb|Double| , $+$, $0$) is a Monoid in Scala or not
+    \item prove whether (\verb|BigDecimal| , $+$, $0$) is a Monoid in Scala or not
+    \item prove whether sorters on a list of sortable elements can be equipped with a Monoid instance or not.
+    \item what about filter predicates?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{lstlisting}[language=haskell]
+  data Erratum = BannedHashtag 
+     | PriceLowerThanShippingCost 
+     | TooManyHashtags 
+     | .. deriving (Eq, Show)
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
   \begin{lstlisting}[language=haskell]
   instance Monoid [a] where
      (<>) = (++)
      mempty = []
   \end{lstlisting}
 \end{frame}
+
+
 \begin{frame}[fragile]
-  ``Homeworks'':
+  \verb|[Erratum]| forms a monoid
+\end{frame}
+
+\begin{frame}
+  (((()()()(()))(())()()((())()()()((
+\end{frame}
+\begin{frame}[fragile]
+  \begin{dmath*}
+    A = \left\{ a,b,e \right\}
+  \end{dmath*}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{align*}
+    \varphi(a, e) &= \varphi(e, a)  = a\\
+    \varphi(b, e) &= \varphi(e, b)  = a\\
+    \varphi(a,b) &= e \\
+    \varphi(a,b) &\neq e 
+  \end{align*}
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \begin{lstlisting}[language=haskell]
+  data Bicyclic = Bicyclic Int Int 
+        deriving (Eq, Show)
+
+  instance Semigroup Bicyclic where
+    (<>) (Bicyclic a b) (Bicyclic c d)
+       | b <= c = Bicyclic (a + c -b ) d
+       | otherwise = Bicyclic a (d + b - c)
+
+  instance Monoid Bicyclic where
+    mempty = Balance 0 0
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{lstlisting}[language=haskell]
+  transform :: Char -> Bicyclic
+  transform '(' = Bicyclic 0 1
+  transform ')' = Bicyclic 1 0
+  transform _ = mempty
+
+  balance :: String -> Bicyclic
+  balance = foldMap transform
+
+  balanced = (mempty ==) . balance
+  \end{lstlisting}
+\end{frame}
+\begin{frame}[fragile]
+  \begin{lstlisting}[language=haskell]
+  import Test.Hspec
+  
+  spec :: Spec
+  spec = describe "Monoidal parsing" $ do
+   it "()" $
+    balance "()" `shouldBe` Balance 0 0
+   it ")(" $
+    balance ")(" `shouldBe` Balance 1 1
+   it "))" $
+    balance "))" `shouldBe` Balance 2 0
+   it "((" $
+    balance "((" `shouldBe` Balance 0 2S
+
+   it "()((())()(()))(())" $
+    balance "()((())()(()))(())" `shouldBe` 
+       Balance 0 0
+  \end{lstlisting}
+\end{frame}
+
+\section{Free monads}
+\begin{frame}[fragile]
+  \begin{lstlisting}[language=haskell]
+  import Data.Time
+  
+  data Todo = Todo String (Maybe UTCTime) 
+    deriving (Eq,Show) 
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{lstlisting}[language=haskell]
+  program :: Todo -> IO ()
+  program t@(Todo _ Nothing) = persist t
+  program t@(Todo _ (Just due))=
+    getCurrentTime >>= \ now ->
+    if now >= due then
+       persist t
+    else
+       pure () -- ignore errors  
+
+  -- somewhere 
+  persist :: Todo -> IO()
+  persist = undefined
+       
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{lstlisting}[language=haskell]
+   {-# LANGUAGE DeriveFunctor #-}
+
+    data Program a =
+      Persist Todo (Program a) |
+      Done a deriving (Eq,Show, Functor)
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{lstlisting}[language=haskell]
+    program' :: Todo -> Program ()
+    program' t = Persist t (pure ())
+  \end{lstlisting}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+  \begin{lstlisting}[language=haskell]
+    data Program a =
+      GetCurrentTime (UTCTime -> Program a) |
+      Persist Todo (Program a) |
+      Done a deriving (Functor)
+  \end{lstlisting}
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \begin{lstlisting}[language=haskell]
+  program' :: Todo -> Program ()
+  program' t@(Todo _ Nothing) = Persist t (pure ())
+  program' t@(Todo _ (Just due))=
+    GetCurrentTime (\ now ->
+    if now >= due then
+       Persist t (pure ())
+    else
+       pure () -- ignore errors
+       )
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{lstlisting}[language=haskell]
+  data Free f a
+    = Pure a
+    | Free (f (Free f a)) deriving (Functor)
+
+
+  liftF :: Functor f => f a -> Free f a
+  liftF = Free . fmap Pure
+    
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{lstlisting}[language=haskell]
+  instance Functor f => Monad (Free f) where
+    return = Pure
+    Pure x  >>= g  =  g x
+    Free fx >>= g  =  Free ((>>= g) <$> fx)
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{lstlisting}[language=haskell]
+  data ProgramF a =
+    GetCurrentTime (UTCTime -> Program a) |
+    Persist Todo (Program a) |
+    Done a deriving (Functor)
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{lstlisting}[language=haskell]
+  type Program = Free ProgramF
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{lstlisting}[language=haskell]
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  Advantages:
   \begin{itemize}
-    \item prove whether (\verb|Double| , $+$, $0$) is a Monoid in Scala or not
-    \item prove whether (\verb|BigDecimal| , $+$, $0$) is a Monoid in Scala or not
-    \item prove whether sorters on a list of sortable elements can be equipped with a Monoid instance or not. 
-    \item what about filter predicates?
+    \item Managing capabilities precisely
+    \item Better separation of business logic and effectful interpreters
   \end{itemize}
 \end{frame}
 
 
 \begin{frame}[fragile]
-  Monoidal parsing
-
-
-
-
-\end{frame}  
-
-\begin{frame}
-  Monoids, categorically
-
-
-
-
+  \begin{lstlisting}[language=haskell]
+  interface Clock {
+     def now : Instant 
+  }   
+  \end{lstlisting}
 \end{frame}
 
-
-\section{Free monads}
 \begin{frame}[fragile]
-  \frametitle{Placeholder Example}
+  Boilerplate:
+  \begin{itemize}
+    \item lifting of operations (can be absorbed with metaprogramming) 
+    \item Multiple algebras / capabilities
+    \item Copy paste code in almost similar interpreters 
+    \item test interpreters (pure ones, eg, State) 
+  \end{itemize}
 \end{frame}
-
-
-
 
 \section{Polysemy}
-
-
-\section{Free monoidals}
-
-
-\section{Optparse}
+\section{Free applicatives and optparse}
 
 \plain{Questions?}
 
